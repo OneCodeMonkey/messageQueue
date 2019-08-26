@@ -136,7 +136,65 @@ public class RabbitConsumer {
 
 ### 2.1 相关概念介绍
 
+Exchange 分四种类型：fanout, direct, topic, header(头交换器用的很少)
+
+###### 小结：RabbitMQ 运行流程
+
+生产者端：
+
+1.生产者连接到 RabbitMQ broker，建立一个连接 (Connection)，开启一个信道（Channel）
+
+2.生产者声明交换器，设置交换器类型（四种之一），是否持久化，是否自动删除等。
+
+3.生产者声明一个队列并设置是否排他，是否持久化，是否自动删除等。
+
+4.生产者通过 routingKey 创建交换器和队列的绑定关系。
+
+5.生产者发送消息到 RabbitMQ broker, 消息中要包含 routingKey, exchange_name 等必要信息。
+
+6.相应的交换器根据接收到的 routingKey 查找相匹配的队列。
+
+7.如果找到匹配的队列，则将从生产者发过来的消息存入相应的队列
+
+8.如果没找到，则根据生产者配置的属性，选择丢弃还是回退给生产者
+
+9.关闭 channel，再关闭 connection.
+
+消费者端：
+
+1.消费者连接到 RabbitMQ broker，建立一个连接（Connection），开启一个信道（Channel）.
+
+2.消费者向 RabbitMQ  broker 请求消费相应队列中的消息，可能会设置相应的回调函数，以及做一些准备工作。
+
+3.等待 RabbiteMQ broker 回应并投递相应队列中的消息，消费者接收消息。
+
+4.消费者确认（ack）接收到的消息。
+
+5.RabbitMQ 从队列中删除相应的已经被确认的消息。
+
+6.关闭 channel，在关闭 connection.
+
 ### 2.2 AMQP 协议介绍
+
+###### 标准 AMQP 协议包含三层：
+
+1.Module Layer: 模块层。位于协议的最上层，主要定义了一些可供客户端调用的命令，客户端可以利用这些命令实现自己的业务逻辑。例如客户端使用 Queue.Declare 命令声明一个队列或者使用 Basic.Consume 订阅消费一个队列中的消息。
+
+2.Session Layer: 会话层。主要负责将客户端的命令发送给服务器，再将服务器端的应答返回给客户端。主要为客户端与服务器之间的通信提供可靠的同步机制，以及错误处理机制。
+
+3.Transport Layer: 传输层。主要传输二进制数据流，提供帧的处理，信道复用，错误检测和数据表示等。
+
+###### AMQP 生产者流转过程：
+
+// todo
+
+###### AMQP 消费者流转过程：
+
+// todo
+
+###### AMQP 命令相关：
+
+// todo
 
 ## 3. 客户端开发向导
 
@@ -153,6 +211,10 @@ public class RabbitConsumer {
 ### 3.6 关闭连接
 
 ## 4. RabbitMQ 进阶
+
+mandatory 和 immediate 是 channel.basicPublish 方法中的两个参数，他们都有当消息传递过程中不可达目的地时将消息返回给生产者的功能。RabbitMQ 提供的备份交换器（Alternate Exchange）可以将未能被交换器路由的消息（没有绑定队列或者没有匹配的绑定）存储起来，而不用返回给客户端。
+
+
 
 ### 4.1 消息何去何从
 
@@ -208,7 +270,7 @@ public class RabbitConsumer {
 
 ### 5.6 HTTPAPI 接口管理
 
-## 6. RabbitMQ 管理
+## 6. RabbitMQ 配置
 
 ### 6.1 环境变量
 
