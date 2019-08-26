@@ -212,13 +212,13 @@ Exchange 分四种类型：fanout, direct, topic, header(头交换器用的很�
 
 ## 4. RabbitMQ 进阶
 
-mandatory 和 immediate 是 channel.basicPublish 方法中的两个参数，他们都有当消息传递过程中不可达目的地时将消息返回给生产者的功能。RabbitMQ 提供的备份交换器（Alternate Exchange）可以将未能被交换器路由的消息（没有绑定队列或者没有匹配的绑定）存储起来，而不用返回给客户端。
-
-
-
 ### 4.1 消息何去何从
 
+mandatory 和 immediate 是 channel.basicPublish 方法中的两个参数，他们都有当消息传递过程中不可达目的地时将消息返回给生产者的功能。RabbitMQ 提供的备份交换器（Alternate Exchange）可以将未能被交换器路由的消息（没有绑定队列或者没有匹配的绑定）存储起来，而不用返回给客户端。
+
 #### 4.1.1 mandatory 参数
+
+
 
 #### 4.1.2 immediate 参数
 
