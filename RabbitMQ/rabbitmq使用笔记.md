@@ -18,11 +18,119 @@ tutorials:
 
 ### 1.1 什么是消息中间件
 
+消息队列中间件，或叫消息中间件，消息队列均可
+
+有两种传递模式：1. 点对点（P2P）  2. 发布/订阅（Publisher/Subscriber）
+
+
+
 ### 1.2 消息中间件的使用
+
+1.解耦
+
+2.冗余（存储）
+
+3.扩展性
+
+4.流量削峰
+
+5.可恢复性
+
+6.顺序保证
+
+7.缓冲
+
+8.异步通信
+
+
 
 ### 1.3 Rabbitmq 的起源
 
 ### 1.4 Rabbitmq 的安装及简单使用
+
+```java
+// Helloworld Demo
+// 消费者 client 端
+package com.ly.rabbitmq.demo;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+public class RabbitProducer {
+  	private static final String EXCHANGE_NAME = "exchange_demo";
+    private static final String ROUTING_KEY = "routingkey_demo";
+    private static final String QUEUE_NAME = "queue_demo";
+    private static final String IP_ADDRESS = "192.168.188.254";
+    private static final int PORT = 5672;	// RabbitMQ 服务器默认端口号
+    public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(IP_ADDRESS);
+        factory.setPort(PORT);
+        factory.setUsername("root");
+        factory.setPassword("root123");
+        Connection connection = factory.newConnection();	// 创建连接
+        Channel channel = connection.createChannel();	// 创建信道
+        channel.exchangeDeclare(EXCHANGE_NAME, "direct", true, false, null);	// 创建一个直连，持久化，非自动删除的交换器
+        channel.queueDeclare(QUEUE_NAME, true, false, false, null);	// 创建一个持久化的，非排他的，非自动删除的队列
+        channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, ROTING_KEY);	//	通过 routingkey 绑定交换器与队列
+        String message = "Hello World!";
+        channel.basicPublish(EXCHANGE_NAME, ROUTING_KEY, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes);
+        
+        channel.close();
+        connection.close();
+    }
+}
+
+// 消费者客户端 ConsumerClient
+package com.ly.rabbitmq.demo;
+
+import com.rabbitmq.client.*;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+public class RabbitConsumer {
+    private static final String QUEUE_NAME = "queue_demo";
+    private static final String IP_ADDRESS = "192.168.188.253";
+    private static final int PORT = 5672;
+    
+    public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+        Address[] addresses = new Address[] {
+            new Address(IP_ADDRESS, PORT)
+        };
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setUsername("root");
+        factory.setPassword("123456");
+        // 连接方式与上面不同，注意对比
+        Connection connection = factory.newConnection(addresses);	// 创建连接
+        final Channel channel = connection.createChannel();		// 创建信道
+        channel.basicQos(64);	// 设置客户端最多接收未被 ACK 的消息个数
+        Consumer consumer = new DefaultConsumer(channel) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                System.out.println("recv message: " + new String(body));
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch(InterruptedException e) {
+                    e.printStackTrace();
+                }
+                channel.basicAck(envelope.getDeliveryTag(), false);
+            }
+        };
+       	channel.basicConsume(QUEUE_NAME, consumer);
+        // 等待回调函数执行完毕以后，关闭资源
+        TimeUnit.SECONDS.sleep(5);
+        channel.close();
+        connection.close();
+    }
+}
+
+```
+
+
 
 ## 2. Rabbitmq 入门
 
